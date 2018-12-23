@@ -22,33 +22,37 @@ def loadData(filename):
         obj["fold"] = v[5]
         obj["data"] = np.asarray(v[6:], dtype=np.int)
 
+        # get the previous letter in the same word
+        if (int(v[4]) == 1):
+            obj["prevLetter"] = '$'
+        else: 
+            obj["prevLetter"] = dataset[len(dataset) - 1]["letter"]
+
         dataset.append(obj)
 
     return dataset
 
-
-def load_data_bigrams(filename):
-    dataset = {}
+def loadDataPart3(filename):
+    dataset = []
     with open(filename, 'r') as f:
         lines = f.read().splitlines()
-
+    
+    word = []
     # organize it according to readme.md
     for line in lines:
         obj = {}
-        v = line.split()  # split by white space
+        v = line.split() # split by white space
 
-        obj["id"] = v[0]
-        obj["letter"] = v[1]
-        obj["next_id"] = v[2]
-        obj["word_id"] = v[3]
-        obj["position"] = v[4]
-        obj["fold"] = v[5]
+        obj["letter"] = v[1] 
         obj["data"] = np.asarray(v[6:], dtype=np.int)
-
-        dataset["word_id"] = obj
+        
+        # end of word
+        word.append(obj)
+        if (int(v[2]) == -1):
+            dataset.append(word)
+            word = []
 
     return dataset
-
 
 def matrix_inner_product(mat_a, mat_b):
     score = 0
@@ -56,3 +60,6 @@ def matrix_inner_product(mat_a, mat_b):
         score = score + np.dot(v1, v2)
 
     return score
+
+def matrix_inner_product1(mat_a, mat_b):
+    return np.dot(mat_a, mat_b.transpose()).trace()
