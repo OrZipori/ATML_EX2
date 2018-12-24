@@ -75,8 +75,8 @@ class Model3(object):
             prev_index_track_matrix[0][i] = 0
 
         for i in range(1, len(word)):
-            for j in range(0, num_of_eng_char - 1):
-                curr_char = utils.indexToChar[j+1]
+            for j in range(1, num_of_eng_char):
+                curr_char = utils.indexToChar[j]
                 best_score, best_score_index = self.argmax(word[i], curr_char, score_matrix, i)
                 score_matrix[i][j] = best_score
                 prev_index_track_matrix[i][j] = best_score_index
@@ -88,7 +88,7 @@ class Model3(object):
                 y_hat[len(word) - 1] = i
                 best_score = score_matrix[len(word) - 1][i]
 
-        for i in range(len(word) - 2, 0, -1):
+        for i in range(len(word) - 2, -1, -1):
             y_hat[i] = prev_index_track_matrix[i+1][y_hat[i+1]]
         
         # print("*" * 10)
@@ -109,6 +109,7 @@ class Model3(object):
         phi[y_prev][128 + y_index] = 1
         return phi
 
+    # consider move to phi as matrix by adding another 27 columns like build phi
     def create_phi(self, x, y_hat):
         y = utils.charToIndex[y_hat[1]]
         y_prev = utils.charToIndex[y_hat[0]]
