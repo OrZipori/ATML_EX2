@@ -15,7 +15,8 @@ def filterData(dataset):
 class Model3(object):
     def __init__(self, dataset):
         self.trainset = dataset
-        self.W = np.zeros((len(utils.charToIndex), 128))  # instead of 26 Ws of size 128
+        #self.W = np.zeros((len(utils.charToIndex), 155))  # instead of 26 Ws of size 128
+        self.W = np.zeros((27*128 + 27*27))
 
     def train(self, epochs, log=True):        
         # epochs
@@ -34,8 +35,8 @@ class Model3(object):
                         # convert to char
                         y_h = utils.indexToChar[pred]
                         y_i = xi["letter"]
-                        phi_y = self.build_phi(xi, (prev_y, y_i))
-                        phi_y_hat = self.build_phi(xi, (prev_y_h ,y_h))
+                        phi_y = self.create_phi(xi, (prev_y, y_i))
+                        phi_y_hat = self.create_phi(xi, (prev_y_h ,y_h))
 
                         # update
                         self.W += phi_y - phi_y_hat
@@ -68,7 +69,7 @@ class Model3(object):
         for i in range(1, num_of_eng_char):
             curr_char = utils.indexToChar[i]
             y_hat = (prev_char, curr_char)
-            phi = self.build_phi(word[0], y_hat)
+            phi = self.create_phi(word[0], y_hat)
             score = utils.matrix_inner_product(self.W, phi)
             score_matrix[0][i] = score
             prev_index_track_matrix[0][i] = 0
@@ -103,16 +104,25 @@ class Model3(object):
         y_index = utils.charToIndex[curr_char]
         y_prev = utils.charToIndex[prev_char]
 
-        phi = np.zeros((num_of_eng_char, 128))
-        phi[y_index] = x["data"]
-        phi[y_prev][y_index] = 1
+        phi = np.zeros((num_of_eng_char, 155))
+        phi[y_index, :128] = x["data"]
+        phi[y_prev][128 + y_index] = 1
         return phi
+
+    def create_phi(self, x, y_hat):
+        y = utils.charToIndex[y_hat[1]]
+        y_prev = utils.charToIndex[y_hat[0]]
+        PHI = np.zeros((27 * 128))
+        PHI[y * 128:(y + 1) * 128] = x["data"]
+        PHI_prev = np.zeros((27*27))
+        PHI_prev[y_prev * y] = 1
+        return np.concatenate((PHI, PHI_prev))
 
     def argmax(self, x, curr_char, score_matrix, index):
         max_value_y_hat = -np.inf
         max_y_hat_index = -1
         for y_hat in utils.charToIndex:
-            phi = self.build_phi(x, (y_hat, curr_char))
+            phi = self.create_phi(x, (y_hat, curr_char))
             potential_y_hat = utils.matrix_inner_product(self.W, phi) + score_matrix[index-1][utils.charToIndex[y_hat]]
             if potential_y_hat > max_value_y_hat:
                 max_value_y_hat = potential_y_hat
@@ -129,11 +139,17 @@ def main():
     model.train(3)
 
     correct = incorrect = 0
-    for x in testset:
-        y = utils.charToIndex[x["letter"]]
-        y_tag = model.inference(x)
-        correct += (y == y_tag)
-        incorrect += (y != y_tag)
+    for word in testset:
+        y_hat = model.predict(word) 
+
+        for pred, xi in zip(y_hat, word):
+            l = utils.charToIndex[xi["letter"]]
+
+            if (pred != l):
+                # convert to char
+                incorrect += 1
+            else:
+                correct += 1
 
     acc = 100.0 * correct / (correct + incorrect)
 

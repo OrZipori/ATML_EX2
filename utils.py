@@ -54,12 +54,15 @@ def loadDataPart3(filename):
 
     return dataset
 
-def matrix_inner_product(mat_a, mat_b):
+def matrix_inner_product2(mat_a, mat_b):
     score = 0
     for v1, v2 in zip(mat_a, mat_b):
         score = score + np.dot(v1, v2)
 
     return score
+
+def matrix_inner_product(mat_a, mat_b):
+    return np.dot(mat_a, mat_b)
 
 def matrix_inner_product1(mat_a, mat_b):
     return np.dot(mat_a, mat_b.transpose()).trace()
