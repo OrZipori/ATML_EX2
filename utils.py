@@ -1,4 +1,5 @@
 import numpy as np 
+import matplotlib.pyplot as plt
 
 # mapping for predictions
 charToIndex = {c:i for i, c in enumerate('$abcdefghijklmnopqrstuvwxyz')}
@@ -61,8 +62,12 @@ def matrix_inner_product2(mat_a, mat_b):
 
     return score
 
-def matrix_inner_product(mat_a, mat_b):
+def matrix_inner_product1(mat_a, mat_b):
     return np.dot(mat_a, mat_b)
 
-def matrix_inner_product1(mat_a, mat_b):
+def matrix_inner_product(mat_a, mat_b):
     return np.dot(mat_a, mat_b.transpose()).trace()
+
+def plotHeatMap(W):
+    # https://matplotlib.org/gallery/images_contours_and_fields/image_annotated_heatmap.html
+    pass
